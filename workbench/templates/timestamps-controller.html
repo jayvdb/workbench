@@ -106,19 +106,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2000)
   }
 
+  const escapeHtml = str => new Option(str).innerHTML
+  const updateStatus = async ({url, user}) => {
+    const params = new URLSearchParams()
+    params.append("user", user)
+    const list = document.querySelector("#list")
+    try {
+      const response = await fetch(`${url}?${params}`)
+      if (!response.ok) throw Error()
+      const data = await response.json()
+      list.innerHTML = data.timestamps.map(t => `${escapeHtml(t.timestamp)}`).join("<br>")
+    } catch(err) {
+      console.error(err)
+      list.innerHTML = ""
+    }
+  }
+
   const params = new URLSearchParams(window.location.search)
-  const url = params.get("url")
+  const createUrl = params.get("url")
   const user = params.get("user")
   const title = params.get("title")
 
-  if (!user || !url) {
+  if (!user || !createUrl) {
     alert("Necessary configuration parameters missing.")
   }
+
+  const listUrl = createUrl.replace(/create-timestamp/, "list-timestamps")
 
   if (title) {
     document.title += `: ${title}`
     $("h1").textContent += `: ${title}`
   }
+
+  updateStatus({user, url: listUrl})
 
   document.body.addEventListener("click", async e => {
     const button = e.target.closest("button[data-type]")
@@ -129,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
       fd.append("notes", notes.value)
       fd.append("user", user)
       try {
-        const response = await fetch(`${url}`, {
+        const response = await fetch(`${createUrl}`, {
           method: "POST",
           body: fd,
         })
@@ -163,6 +183,8 @@ document.addEventListener("DOMContentLoaded", () => {
   </Div>
 
   <div id="status"></div>
+
+  <div id="list"></div>
 </main>
 
 </body>
