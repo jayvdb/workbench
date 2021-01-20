@@ -7,6 +7,7 @@ from django.test import TestCase
 from workbench import factories
 from workbench.awt.models import Year  # any tools.Model()
 from workbench.contacts.models import Organization
+from workbench.offers.models import Offer
 from workbench.projects.models import Project
 from workbench.tools import formats
 from workbench.tools.forms import Autocomplete
@@ -36,10 +37,10 @@ class ToolsTest(TestCase):
 
     def test_model_with_total(self):
         """The calculation of totals excl. and incl. tax work"""
-        m = ModelWithTotal(
+        m = Offer(
             subtotal=Decimal("20"), discount=Decimal("5"), tax_rate=Decimal("8.0")
         )
-        m._calculate_total()
+        ModelWithTotal._calculate_total(m)
 
         self.assertAlmostEqual(m._round_5cents(Decimal("1.02")), Decimal("1.00"))
         self.assertAlmostEqual(m._round_5cents(Decimal("1.03")), Decimal("1.05"))
